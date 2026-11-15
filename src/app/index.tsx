@@ -1,12 +1,24 @@
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PrimaryButton } from '@/components/primary-button';
 import { colors, radius, spacing } from '@/constants/theme';
+import { getBestScore } from '@/features/snake/best-score';
 
 // Route "/" (the first screen). Like Next.js app/page.tsx.
 export default function HomeScreen() {
+  const [best, setBest] = useState(getBestScore);
+
+  // Re-read the best score every time this screen comes back into view
+  // (e.g. after returning from a game).
+  useFocusEffect(
+    useCallback(() => {
+      setBest(getBestScore());
+    }, []),
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.hero}>
@@ -21,7 +33,10 @@ export default function HomeScreen() {
         <Text style={styles.tagline}>Eat. Grow. Don&apos;t bite yourself.</Text>
       </View>
 
-      <PrimaryButton label="PLAY" onPress={() => router.push('/game')} />
+      <View style={styles.actions}>
+        <PrimaryButton label="PLAY" onPress={() => router.push('/game')} />
+        {best > 0 && <Text style={styles.best}>Best score: {best}</Text>}
+      </View>
     </SafeAreaView>
   );
 }
@@ -69,5 +84,14 @@ const styles = StyleSheet.create({
   tagline: {
     color: colors.textMuted,
     fontSize: 16,
+  },
+  actions: {
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  best: {
+    color: colors.textMuted,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
