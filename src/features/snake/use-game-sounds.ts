@@ -1,32 +1,43 @@
-import { setAudioModeAsync, useAudioPlayer } from 'expo-audio';
+import { type AudioPlayer, setAudioModeAsync, useAudioPlayer } from 'expo-audio';
 import { useCallback, useEffect } from 'react';
 
 const EAT_SOUND = require('../../../assets/sounds/eat.wav');
 const CRASH_SOUND = require('../../../assets/sounds/crash.wav');
 
-/** Loads the sound effects once and gives back simple play functions. */
-export function useGameSounds() {
+/**
+ * Short sound effects, triggered by game EVENTS (ate, crashed).
+ * Background music lives in use-game-music.ts because it follows game STATE.
+ */
+export function useGameSounds({ muted }: { muted: boolean }) {
   // Players are released automatically when the screen closes.
   const eatPlayer = useAudioPlayer(EAT_SOUND);
   const crashPlayer = useAudioPlayer(CRASH_SOUND);
 
   useEffect(() => {
-    // Game sounds should stay quiet when an iPhone is on silent,
-    // and should never stop the user's music.
+    // App-wide audio rules: only make sound when the phone is not on
+    // silent/vibrate, and never stop the user's own music app.
     setAudioModeAsync({ playsInSilentMode: false, interruptionMode: 'mixWithOthers' }).catch(
       () => {},
     );
   }, []);
 
   const playEat = useCallback(() => {
-    eatPlayer.seekTo(0);
-    eatPlayer.play();
-  }, [eatPlayer]);
+    if (!muted) playFromStart(eatPlayer);
+  }, [eatPlayer, muted]);
 
   const playCrash = useCallback(() => {
-    crashPlayer.seekTo(0);
-    crashPlayer.play();
-  }, [crashPlayer]);
+    if (!muted) playFromStart(crashPlayer);
+  }, [crashPlayer, muted]);
 
   return { playEat, playCrash };
+}
+
+/** Rewind and play, so rapid repeats always sound from the beginning. */
+export function playFromStart(player: AudioPlayer) {
+  rewind(player);
+  player.play();
+}
+
+export function rewind(player: AudioPlayer) {
+  player.seekTo(0).catch(() => {});
 }

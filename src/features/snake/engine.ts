@@ -145,6 +145,11 @@ export function getTickMs(score: number): number {
   return Math.max(MIN_TICK_MS, START_TICK_MS - score * SPEEDUP_PER_FOOD_MS);
 }
 
+/** How far along the speed-up the game is: 0 at the start, 1 at top speed. */
+export function getSpeedProgress(score: number): number {
+  return (START_TICK_MS - getTickMs(score)) / (START_TICK_MS - MIN_TICK_MS);
+}
+
 export function startGame(state: GameState): GameState {
   return state.status === 'ready' ? { ...state, status: 'playing' } : state;
 }

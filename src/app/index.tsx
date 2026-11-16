@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PrimaryButton } from '@/components/primary-button';
 import { colors, radius, spacing } from '@/constants/theme';
-import { getBestScore } from '@/features/snake/best-score';
+import { getBestScore } from '@/features/snake/storage';
 
 // Route "/" (the first screen). Like Next.js app/page.tsx.
 export default function HomeScreen() {
